@@ -1,0 +1,10 @@
+---
+- name: weekly system Reboot
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Reboot System
+      reboot: 
+        reboot_timeout: 300
+      when: "'sunday' in ansible_date_time.weekday"

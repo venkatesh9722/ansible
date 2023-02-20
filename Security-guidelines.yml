@@ -1,0 +1,49 @@
+---
+- name: Enforce Security Guidelines
+  hosts: servers
+  become: yes
+
+  vars:
+    # Security guidelines
+    users:
+      - name: admin1
+        uid: 1001
+        password: '123456'
+      - name: admin2
+        uid: 1002
+        password: '23456'
+    sshd_config:
+      PermitRootLogin: no
+      PasswordAuthentication: no
+    firewall:
+      - { port: 22, proto: tcp }
+      - { port: 80, proto: tcp }
+      - { port: 443, proto: tcp }
+
+  tasks:
+    # Add users
+    - name: Add users
+      user:
+        name: "{{ item.name }}"
+        uid: "{{ item.uid }}"
+        password: "{{ item.password }}"
+        state: present
+      with_items: "{{ users }}"
+
+    # Configure sshd
+    - name: Configure sshd
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^{{ item.key }} "
+        line: "{{ item.key }} {{ item.value }}"
+        state: present
+      with_dict: "{{ sshd_config }}"
+
+    # Configure firewall
+    - name: Configure firewall
+      firewalld:
+        port: "{{ item.port }}"
+        protocol: "{{ item.proto }}"
+        state: enabled
+        permanent: true
+      with_items: "{{ firewall }}"

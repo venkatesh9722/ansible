@@ -1,0 +1,14 @@
+---
+- name: Enforce desired configuration and revert if changed
+  hosts: all
+  tasks:
+    - name: Copy configuration file
+      copy:
+        src: /path/to/desired/configuration/file
+        dest: /etc/myapp/configuration/file
+      notify: Revert if changed
+
+  handlers:
+    - name: Revert if changed
+      command: cp /etc/myapp/configuration/file.bak /etc/myapp/configuration/file
+      listen: Revert if changed
